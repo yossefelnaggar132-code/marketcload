@@ -345,6 +345,27 @@ export function useMarketplaceStore() {
     notify();
   };
 
+  const resolveDispute = (disputeId: string, resolutionNotes: string, status: 'resolved_customer' | 'resolved_vendor' | 'compromised' = 'resolved_customer') => {
+    globalState.disputes = globalState.disputes.map(d => {
+      if (d.id === disputeId) {
+        return {
+          ...d,
+          status,
+          resolution_notes: resolutionNotes,
+        };
+      }
+      return d;
+    });
+    syncLocalStorage();
+    notify();
+  };
+
+  const updateVendorTier = (vendorId: string, tier: 'basic' | 'verified' | 'premium') => {
+    globalState.vendors = globalState.vendors.map(v => v.id === vendorId ? { ...v, tier } : v);
+    syncLocalStorage();
+    notify();
+  };
+
   return {
     currentRole: globalState.currentRole,
     currentUser: globalState.currentUser,
@@ -366,7 +387,10 @@ export function useMarketplaceStore() {
     createOrder,
     confirmDelivery,
     createDispute,
+    resolveDispute,
     approveVendor,
     rejectVendor,
+    updateVendorTier,
   };
 }
+
