@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Product, RFQRequest, Order, UserRole, Vendor, Profile, Dispute } from '@/types';
+import { Product, RFQRequest, Order, UserRole, Vendor, Dispute } from '@/types';
 import { MOCK_PRODUCTS, MOCK_RFQS, MOCK_ORDERS, MOCK_VENDORS, MOCK_DISPUTES } from './mock-data';
 
 export interface AuthUser {
@@ -42,57 +42,99 @@ const DEFAULT_USERS: Record<UserRole, AuthUser> = {
   }
 };
 
-export function useMarketplaceStore() {
-  const [currentRole, setCurrentRole] = useState<UserRole>('customer');
-  const [currentUser, setCurrentUser] = useState<AuthUser>(DEFAULT_USERS.customer);
-  const [products, setProducts] = useState<Product[]>(MOCK_PRODUCTS);
-  const [rfqs, setRfqs] = useState<RFQRequest[]>(MOCK_RFQS);
-  const [orders, setOrders] = useState<Order[]>(MOCK_ORDERS);
-  const [vendors, setVendors] = useState<Vendor[]>(MOCK_VENDORS);
-  const [disputes, setDisputes] = useState<Dispute[]>(MOCK_DISPUTES);
+// Global reactive singleton state across components
+interface StoreState {
+  currentRole: UserRole;
+  currentUser: AuthUser;
+  products: Product[];
+  rfqs: RFQRequest[];
+  orders: Order[];
+  vendors: Vendor[];
+  disputes: Dispute[];
+  searchQuery: string;
+}
 
-  // Load persisted state if exists
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const savedRole = localStorage.getItem('damietta_role') as UserRole;
-      if (savedRole && (['customer', 'vendor', 'admin'] as UserRole[]).includes(savedRole)) {
-        setCurrentRole(savedRole);
-        setCurrentUser(DEFAULT_USERS[savedRole]);
-      }
+let globalState: StoreState = {
+  currentRole: 'customer',
+  currentUser: DEFAULT_USERS.customer,
+  products: MOCK_PRODUCTS,
+  rfqs: MOCK_RFQS,
+  orders: MOCK_ORDERS,
+  vendors: MOCK_VENDORS,
+  disputes: MOCK_DISPUTES,
+  searchQuery: '',
+};
 
-      const savedProducts = localStorage.getItem('damietta_products');
-      if (savedProducts) {
-        try { setProducts(JSON.parse(savedProducts)); } catch {}
-      }
+let isHydrated = false;
+const listeners = new Set<() => void>();
 
-      const savedRfqs = localStorage.getItem('damietta_rfqs');
-      if (savedRfqs) {
-        try { setRfqs(JSON.parse(savedRfqs)); } catch {}
-      }
+function notify() {
+  listeners.forEach(l => l());
+}
 
-      const savedOrders = localStorage.getItem('damietta_orders');
-      if (savedOrders) {
-        try { setOrders(JSON.parse(savedOrders)); } catch {}
-      }
+function syncLocalStorage() {
+  if (typeof window !== 'undefined') {
+    try {
+      localStorage.setItem('damietta_role', globalState.currentRole);
+      localStorage.setItem('damietta_products', JSON.stringify(globalState.products));
+      localStorage.setItem('damietta_rfqs', JSON.stringify(globalState.rfqs));
+      localStorage.setItem('damietta_orders', JSON.stringify(globalState.orders));
+      localStorage.setItem('damietta_vendors', JSON.stringify(globalState.vendors));
+      localStorage.setItem('damietta_disputes', JSON.stringify(globalState.disputes));
+    } catch {}
+  }
+}
 
-      const savedVendors = localStorage.getItem('damietta_vendors');
-      if (savedVendors) {
-        try { setVendors(JSON.parse(savedVendors)); } catch {}
-      }
+function initHydration() {
+  if (isHydrated || typeof window === 'undefined') return;
+  isHydrated = true;
 
-      const savedDisputes = localStorage.getItem('damietta_disputes');
-      if (savedDisputes) {
-        try { setDisputes(JSON.parse(savedDisputes)); } catch {}
-      }
+  try {
+    const savedRole = localStorage.getItem('damietta_role') as UserRole;
+    if (savedRole && (['customer', 'vendor', 'admin'] as UserRole[]).includes(savedRole)) {
+      globalState.currentRole = savedRole;
+      globalState.currentUser = DEFAULT_USERS[savedRole];
     }
+
+    const savedProducts = localStorage.getItem('damietta_products');
+    if (savedProducts) globalState.products = JSON.parse(savedProducts);
+
+    const savedRfqs = localStorage.getItem('damietta_rfqs');
+    if (savedRfqs) globalState.rfqs = JSON.parse(savedRfqs);
+
+    const savedOrders = localStorage.getItem('damietta_orders');
+    if (savedOrders) globalState.orders = JSON.parse(savedOrders);
+
+    const savedVendors = localStorage.getItem('damietta_vendors');
+    if (savedVendors) globalState.vendors = JSON.parse(savedVendors);
+
+    const savedDisputes = localStorage.getItem('damietta_disputes');
+    if (savedDisputes) globalState.disputes = JSON.parse(savedDisputes);
+  } catch {}
+}
+
+export function useMarketplaceStore() {
+  const [, setTick] = useState(0);
+
+  useEffect(() => {
+    initHydration();
+    const handler = () => setTick(t => t + 1);
+    listeners.add(handler);
+    return () => {
+      listeners.delete(handler);
+    };
   }, []);
 
   const switchRole = (role: UserRole) => {
-    setCurrentRole(role);
-    setCurrentUser(DEFAULT_USERS[role]);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('damietta_role', role);
-    }
+    globalState.currentRole = role;
+    globalState.currentUser = DEFAULT_USERS[role];
+    syncLocalStorage();
+    notify();
+  };
+
+  const setSearchQuery = (query: string) => {
+    globalState.searchQuery = query;
+    notify();
   };
 
   const login = (email: string, role: UserRole) => {
@@ -100,11 +142,10 @@ export function useMarketplaceStore() {
       ...DEFAULT_USERS[role],
       email: email || DEFAULT_USERS[role].email,
     };
-    setCurrentRole(role);
-    setCurrentUser(user);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('damietta_role', role);
-    }
+    globalState.currentRole = role;
+    globalState.currentUser = user;
+    syncLocalStorage();
+    notify();
     return user;
   };
 
@@ -116,11 +157,10 @@ export function useMarketplaceStore() {
       full_name: data.full_name,
       phone: data.phone,
     };
-    setCurrentRole('customer');
-    setCurrentUser(user);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('damietta_role', 'customer');
-    }
+    globalState.currentRole = 'customer';
+    globalState.currentUser = user;
+    syncLocalStorage();
+    notify();
     return user;
   };
 
@@ -157,56 +197,40 @@ export function useMarketplaceStore() {
       vendor_id: newVendorId,
     };
 
-    setVendors(prev => {
-      const updated = [newVendor, ...prev];
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('damietta_vendors', JSON.stringify(updated));
-      }
-      return updated;
-    });
-
-    setCurrentRole('vendor');
-    setCurrentUser(user);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('damietta_role', 'vendor');
-    }
+    globalState.vendors = [newVendor, ...globalState.vendors];
+    globalState.currentRole = 'vendor';
+    globalState.currentUser = user;
+    syncLocalStorage();
+    notify();
 
     return { user, vendor: newVendor };
   };
 
   const toggleLike = (productId: string) => {
-    setProducts(prev => {
-      const updated = prev.map(p => {
-        if (p.id === productId) {
-          const isLiked = !p.is_liked;
-          const likesCount = (p.likes_count || 0) + (isLiked ? 1 : -1);
-          const trendingScore = p.trending_score + (isLiked ? 1.5 : -1.5);
-          return { ...p, is_liked: isLiked, likes_count: Math.max(0, likesCount), trending_score: trendingScore };
-        }
-        return p;
-      });
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('damietta_products', JSON.stringify(updated));
+    globalState.products = globalState.products.map(p => {
+      if (p.id === productId) {
+        const isLiked = !p.is_liked;
+        const likesCount = (p.likes_count || 0) + (isLiked ? 1 : -1);
+        const trendingScore = p.trending_score + (isLiked ? 1.5 : -1.5);
+        return { ...p, is_liked: isLiked, likes_count: Math.max(0, likesCount), trending_score: trendingScore };
       }
-      return updated;
+      return p;
     });
+    syncLocalStorage();
+    notify();
   };
 
   const toggleSave = (productId: string) => {
-    setProducts(prev => {
-      const updated = prev.map(p => {
-        if (p.id === productId) {
-          const isSaved = !p.is_saved;
-          const savesCount = (p.saves_count || 0) + (isSaved ? 1 : -1);
-          return { ...p, is_saved: isSaved, saves_count: Math.max(0, savesCount) };
-        }
-        return p;
-      });
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('damietta_products', JSON.stringify(updated));
+    globalState.products = globalState.products.map(p => {
+      if (p.id === productId) {
+        const isSaved = !p.is_saved;
+        const savesCount = (p.saves_count || 0) + (isSaved ? 1 : -1);
+        return { ...p, is_saved: isSaved, saves_count: Math.max(0, savesCount) };
       }
-      return updated;
+      return p;
     });
+    syncLocalStorage();
+    notify();
   };
 
   const addProduct = (newProduct: Omit<Product, 'id' | 'created_at' | 'trending_score' | 'views_count'>) => {
@@ -221,13 +245,9 @@ export function useMarketplaceStore() {
       is_liked: false,
       is_saved: false,
     };
-    setProducts(prev => {
-      const updated = [created, ...prev];
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('damietta_products', JSON.stringify(updated));
-      }
-      return updated;
-    });
+    globalState.products = [created, ...globalState.products];
+    syncLocalStorage();
+    notify();
     return created;
   };
 
@@ -239,26 +259,22 @@ export function useMarketplaceStore() {
       status: 'open',
       offers_count: 0,
     };
-    setRfqs(prev => {
-      const updated = [created, ...prev];
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('damietta_rfqs', JSON.stringify(updated));
-      }
-      return updated;
-    });
+    globalState.rfqs = [created, ...globalState.rfqs];
+    syncLocalStorage();
+    notify();
     return created;
   };
 
   const createOrder = (orderData: Partial<Order>) => {
     const subtotal = orderData.total_price || 30000;
-    const fee = Math.round(subtotal * 0.03); // 3% platform commission
+    const fee = Math.round(subtotal * 0.03);
     const newOrder: Order = {
       id: 'ord-' + Math.floor(100000 + Math.random() * 900000),
-      customer_id: currentUser.id,
-      customer_name: currentUser.full_name,
-      customer_phone: currentUser.phone || '+20 100 000 0000',
-      vendor_id: orderData.vendor_id || vendors[0].id,
-      vendor_name: orderData.vendor_name || vendors[0].business_name,
+      customer_id: globalState.currentUser.id,
+      customer_name: globalState.currentUser.full_name,
+      customer_phone: globalState.currentUser.phone || '+20 100 000 0000',
+      vendor_id: orderData.vendor_id || globalState.vendors[0].id,
+      vendor_name: orderData.vendor_name || globalState.vendors[0].business_name,
       product_id: orderData.product_id,
       product: orderData.product,
       order_type: orderData.order_type || 'direct',
@@ -274,43 +290,34 @@ export function useMarketplaceStore() {
       created_at: new Date().toISOString(),
     };
 
-    setOrders(prev => {
-      const updated = [newOrder, ...prev];
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('damietta_orders', JSON.stringify(updated));
-      }
-      return updated;
-    });
-
+    globalState.orders = [newOrder, ...globalState.orders];
+    syncLocalStorage();
+    notify();
     return newOrder;
   };
 
   const confirmDelivery = (orderId: string, proofUrl: string) => {
-    setOrders(prev => {
-      const updated = prev.map(o => {
-        if (o.id === orderId) {
-          return { 
-            ...o, 
-            status: 'delivered_confirmed' as const,
-            notes: (o.notes ? o.notes + ' | ' : '') + 'تم توثيق الاستلام بالصور.'
-          };
-        }
-        return o;
-      });
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('damietta_orders', JSON.stringify(updated));
+    globalState.orders = globalState.orders.map(o => {
+      if (o.id === orderId) {
+        return { 
+          ...o, 
+          status: 'delivered_confirmed' as const,
+          notes: (o.notes ? o.notes + ' | ' : '') + 'تم توثيق الاستلام بالصور.'
+        };
       }
-      return updated;
+      return o;
     });
+    syncLocalStorage();
+    notify();
   };
 
   const createDispute = (data: { order_id: string; reason: string; evidence_urls: string[] }) => {
-    const targetOrder = orders.find(o => o.id === data.order_id);
+    const targetOrder = globalState.orders.find(o => o.id === data.order_id);
     const newDispute: Dispute = {
       id: 'disp-' + Date.now(),
       order_id: data.order_id,
-      customer_id: currentUser.id,
-      customer_name: currentUser.full_name,
+      customer_id: globalState.currentUser.id,
+      customer_name: globalState.currentUser.full_name,
       vendor_id: targetOrder?.vendor_id || 'v-1',
       vendor_name: targetOrder?.vendor_name || 'معرض دمياط',
       reason: data.reason,
@@ -319,58 +326,39 @@ export function useMarketplaceStore() {
       created_at: new Date().toISOString(),
     };
 
-    setDisputes(prev => {
-      const updated = [newDispute, ...prev];
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('damietta_disputes', JSON.stringify(updated));
-      }
-      return updated;
-    });
-
-    // Also flag the order
-    setOrders(prev => {
-      const updated = prev.map(o => o.id === data.order_id ? { ...o, status: 'disputed' as const } : o);
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('damietta_orders', JSON.stringify(updated));
-      }
-      return updated;
-    });
-
+    globalState.disputes = [newDispute, ...globalState.disputes];
+    globalState.orders = globalState.orders.map(o => o.id === data.order_id ? { ...o, status: 'disputed' as const } : o);
+    syncLocalStorage();
+    notify();
     return newDispute;
   };
 
   const approveVendor = (vendorId: string) => {
-    setVendors(prev => {
-      const updated = prev.map(v => v.id === vendorId ? { ...v, status: 'approved' as const, tier: 'verified' as const } : v);
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('damietta_vendors', JSON.stringify(updated));
-      }
-      return updated;
-    });
+    globalState.vendors = globalState.vendors.map(v => v.id === vendorId ? { ...v, status: 'approved' as const, tier: 'verified' as const } : v);
+    syncLocalStorage();
+    notify();
   };
 
   const rejectVendor = (vendorId: string) => {
-    setVendors(prev => {
-      const updated = prev.map(v => v.id === vendorId ? { ...v, status: 'rejected' as const } : v);
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('damietta_vendors', JSON.stringify(updated));
-      }
-      return updated;
-    });
+    globalState.vendors = globalState.vendors.map(v => v.id === vendorId ? { ...v, status: 'rejected' as const } : v);
+    syncLocalStorage();
+    notify();
   };
 
   return {
-    currentRole,
-    currentUser,
+    currentRole: globalState.currentRole,
+    currentUser: globalState.currentUser,
+    searchQuery: globalState.searchQuery,
+    setSearchQuery,
     switchRole,
     login,
     signupCustomer,
     signupVendor,
-    products,
-    rfqs,
-    orders,
-    vendors,
-    disputes,
+    products: globalState.products,
+    rfqs: globalState.rfqs,
+    orders: globalState.orders,
+    vendors: globalState.vendors,
+    disputes: globalState.disputes,
     toggleLike,
     toggleSave,
     addProduct,

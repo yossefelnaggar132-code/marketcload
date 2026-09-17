@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { 
   Sparkles, 
   Store, 
@@ -12,18 +12,17 @@ import {
   Menu, 
   X, 
   Compass, 
-  User,
   ShoppingBag,
   PackageCheck,
-  LogIn,
-  LogOut
+  LogIn
 } from 'lucide-react';
 import { useMarketplaceStore } from '@/lib/store';
 import { UserRole } from '@/types';
 
 export const Navbar: React.FC = () => {
   const pathname = usePathname();
-  const { currentRole, switchRole, currentUser } = useMarketplaceStore();
+  const router = useRouter();
+  const { currentRole, switchRole, currentUser, searchQuery, setSearchQuery } = useMarketplaceStore();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const navLinks = [
@@ -33,6 +32,25 @@ export const Navbar: React.FC = () => {
     { href: '/vendor/dashboard', label: 'لوحة المعرض', icon: Store },
     { href: '/admin', label: 'لوحة الإدارة', icon: ShieldCheck },
   ];
+
+  const handleSearchChange = (val: string) => {
+    setSearchQuery(val);
+    if (pathname !== '/' && val.trim()) {
+      router.push('/#furniture-feed');
+    }
+  };
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (pathname !== '/') {
+      router.push('/#furniture-feed');
+    } else {
+      const feedEl = document.getElementById('furniture-feed');
+      if (feedEl) {
+        feedEl.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+  };
 
   return (
     <header className="sticky top-0 z-50 glass-panel border-b border-brand-200/50">
@@ -93,17 +111,29 @@ export const Navbar: React.FC = () => {
             </div>
           </Link>
 
-          {/* Search bar on Desktop */}
-          <div className="hidden md:flex flex-1 max-w-md mx-6">
+          {/* Search bar on Desktop (Synchronized with Global Store) */}
+          <form onSubmit={handleSearchSubmit} className="hidden md:flex flex-1 max-w-md mx-6">
             <div className="relative w-full">
               <input
                 type="text"
+                value={searchQuery}
+                onChange={(e) => handleSearchChange(e.target.value)}
                 placeholder="ابحث عن صالون، غرفة نوم زان، مطبخ، أو اسم ورشة..."
-                className="w-full pl-4 pr-10 py-2 rounded-full border border-brand-200 bg-white/90 text-xs focus:outline-none focus:ring-2 focus:ring-brand-500 shadow-sm transition-all"
+                className="w-full pl-8 pr-10 py-2 rounded-full border border-brand-200 bg-white/90 text-xs focus:outline-none focus:ring-2 focus:ring-brand-500 shadow-sm transition-all text-stone-900"
               />
               <Search className="absolute right-3.5 top-2.5 w-4 h-4 text-brand-400" />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery('')}
+                  className="absolute left-3 top-2.5 text-stone-400 hover:text-stone-600"
+                  aria-label="مسح البحث"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
             </div>
-          </div>
+          </form>
 
           {/* Desktop Nav Items */}
           <nav className="hidden lg:flex items-center gap-1">
@@ -159,16 +189,28 @@ export const Navbar: React.FC = () => {
       {/* Mobile Menu */}
       {mobileMenuOpen && (
         <div className="lg:hidden border-t border-brand-200 bg-white/95 px-4 pt-3 pb-6 space-y-2 shadow-xl animate-in slide-in-from-top duration-200">
-          <div className="mb-3">
+          <form onSubmit={handleSearchSubmit} className="mb-3">
             <div className="relative w-full">
               <input
                 type="text"
-                placeholder="ابحث عن أثاث..."
-                className="w-full pl-4 pr-10 py-2 rounded-lg border border-brand-200 bg-stone-50 text-xs"
+                value={searchQuery}
+                onChange={(e) => handleSearchChange(e.target.value)}
+                placeholder="ابحث عن أثاث، زان، أو ورشة..."
+                className="w-full pl-8 pr-10 py-2 rounded-lg border border-brand-200 bg-stone-50 text-xs text-stone-900"
               />
               <Search className="absolute right-3.5 top-2.5 w-4 h-4 text-stone-400" />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery('')}
+                  className="absolute left-3 top-2.5 text-stone-400 hover:text-stone-600"
+                  aria-label="مسح البحث"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
             </div>
-          </div>
+          </form>
           {navLinks.map((link) => {
             const Icon = link.icon;
             const isActive = pathname === link.href;

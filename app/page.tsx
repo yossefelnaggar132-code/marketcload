@@ -10,20 +10,21 @@ import {
   Award, 
   ShieldCheck, 
   PenTool,
-  Search
+  Search,
+  X
 } from 'lucide-react';
 import { ProductCard } from '@/components/ProductCard';
 import { CategoryTabs } from '@/components/CategoryTabs';
 import { useMarketplaceStore } from '@/lib/store';
+import { matchesArabicSearch } from '@/lib/utils';
 
 export default function HomePage() {
-  const { products } = useMarketplaceStore();
+  const { products, searchQuery, setSearchQuery } = useMarketplaceStore();
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedPostType, setSelectedPostType] = useState('all');
   const [sortBy, setSortBy] = useState<'trending' | 'latest'>('trending');
-  const [searchQuery, setSearchQuery] = useState('');
 
-  // Filter & Sort
+  // Filter & Sort with intelligent Arabic matching
   const filteredProducts = useMemo(() => {
     return products
       .filter((p) => {
@@ -31,14 +32,18 @@ export default function HomePage() {
         if (selectedCategory !== 'all' && p.category !== selectedCategory) return false;
         // Post type filter
         if (selectedPostType !== 'all' && p.post_type !== selectedPostType) return false;
-        // Search query
+        // Intelligent Arabic Search matching
         if (searchQuery.trim()) {
-          const q = searchQuery.toLowerCase();
-          const matchTitle = p.title.toLowerCase().includes(q);
-          const matchDesc = p.description.toLowerCase().includes(q);
-          const matchWood = p.wood_type.toLowerCase().includes(q);
-          const matchVendor = p.vendor?.business_name.toLowerCase().includes(q);
-          if (!matchTitle && !matchDesc && !matchWood && !matchVendor) return false;
+          const matched = matchesArabicSearch(
+            searchQuery,
+            p.title,
+            p.description,
+            p.wood_type,
+            p.category,
+            p.vendor?.business_name,
+            p.vendor?.city
+          );
+          if (!matched) return false;
         }
         return true;
       })
@@ -109,17 +114,40 @@ export default function HomePage() {
           </div>
 
           {/* Quick Search inside feed */}
-          <div className="relative w-full md:w-72">
+          <div className="relative w-full md:w-80">
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="فلترة بالاسم أو نوع الخشب..."
-              className="w-full pl-3 pr-9 py-2 rounded-xl border border-brand-200 bg-white text-xs focus:ring-2 focus:ring-brand-500 focus:outline-none"
+              placeholder="ابحث بالاسم، خشب الزان، الأرو، الورشة..."
+              className="w-full pl-8 pr-9 py-2.5 rounded-xl border border-brand-200 bg-white text-xs focus:ring-2 focus:ring-brand-500 focus:outline-none shadow-sm text-stone-900"
             />
-            <Search className="absolute right-3 top-2.5 w-4 h-4 text-stone-400" />
+            <Search className="absolute right-3 top-3 w-4 h-4 text-stone-400" />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery('')}
+                className="absolute left-2.5 top-2.5 p-0.5 rounded-full hover:bg-stone-100 text-stone-400 hover:text-stone-600"
+                aria-label="مسح كلمة البحث"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
           </div>
         </div>
+
+        {/* Active Search Indicator */}
+        {searchQuery.trim() && (
+          <div className="mb-4 inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-brand-50 border border-brand-200 text-xs text-brand-900">
+            <span>نتائج البحث عن: <strong>"{searchQuery}"</strong> ({filteredProducts.length} نتيجة)</span>
+            <button
+              onClick={() => setSearchQuery('')}
+              className="text-brand-700 hover:text-brand-950 font-bold underline text-[11px]"
+            >
+              مسح البحث
+            </button>
+          </div>
+        )}
 
         {/* Category & Sorting Controls */}
         <CategoryTabs
@@ -143,9 +171,9 @@ export default function HomePage() {
             <div className="w-16 h-16 rounded-full bg-brand-50 flex items-center justify-center text-brand-600 mx-auto mb-3">
               <SlidersHorizontal className="w-8 h-8" />
             </div>
-            <h3 className="text-lg font-bold text-stone-800">لا توجد معروضات مطابقة للفلتر المحدد</h3>
+            <h3 className="text-lg font-bold text-stone-800">لا توجد معروضات مطابقة لبحثك "{searchQuery}"</h3>
             <p className="text-sm text-stone-500 max-w-md mx-auto mt-1 mb-4">
-              جرّب اختيار تصنيف آخر أو مسح كلمة البحث لرؤية كافة غرف وصالونات دمياط.
+              جرّب استخدام كلمات أخرى مثل (صالون، زان، غرفة نوم، مطبخ) أو مسح كلمة البحث لرؤية كافة المعروضات.
             </p>
             <button
               onClick={() => {
@@ -155,7 +183,7 @@ export default function HomePage() {
               }}
               className="px-4 py-2 rounded-lg bg-brand-800 text-white text-xs font-bold hover:bg-brand-900"
             >
-              إعادة تعيين الفلاتر
+              إعادة تعيين البحث والفلاتر
             </button>
           </div>
         )}
