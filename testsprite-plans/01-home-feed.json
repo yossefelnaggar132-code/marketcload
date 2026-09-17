@@ -1,0 +1,12 @@
+{
+  "projectId": "152314d2-1c55-4780-b874-2f4d8fe724dd",
+  "type": "frontend",
+  "name": "Home Page — Feed and Category Filtering",
+  "planSteps": [
+    { "type": "action", "description": "Navigate to /" },
+    { "type": "assertion", "description": "The main headline containing 'أثاث دمياط' is visible on the page" },
+    { "type": "assertion", "description": "The feed section with product cards is visible" },
+    { "type": "action", "description": "Type 'صالون' into the search input" },
+    { "type": "assertion", "description": "The product list updates to show matching furniture items" }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "projectId": "152314d2-1c55-4780-b874-2f4d8fe724dd",
+  "type": "frontend",
+  "name": "RFQ Form — Customer can create a custom quotation request",
+  "planSteps": [
+    { "type": "action", "description": "Navigate to /rfq/new" },
+    { "type": "assertion", "description": "The page headline containing 'اطلب تفصيل أثاث بمواصفاتك' is visible" },
+    { "type": "action", "description": "Fill the title input with 'مطلوب صالون كلاسيك زان أحمر'" },
+    { "type": "action", "description": "Fill the specifications textarea with 'أبعاد 4 في 3 أمتار وخشب زان روماني طبيعي مع دهان استر'" },
+    { "type": "action", "description": "Click the submit button to post the RFQ" },
+    { "type": "assertion", "description": "A success message appears stating 'تم نشر طلبك وتوزيعه بنجاح!'" }
+  ]
+}

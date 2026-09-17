@@ -1,0 +1,59 @@
+{
+  "version": 1,
+  "skills": {
+    "deploy-to-vercel": {
+      "source": "vercel-labs/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/deploy-to-vercel/SKILL.md",
+      "computedHash": "3a0481591523c55ecfe2569b6b28b2dcbfa3742367667697219d29170981ad53"
+    },
+    "find-skills": {
+      "source": "vercel-labs/skills",
+      "sourceType": "github",
+      "skillPath": "skills/find-skills/SKILL.md",
+      "computedHash": "b146008599c31057cef1c145774cea5d5afb30e8f43fa802e47a4b461419aaaf"
+    },
+    "nextjs-app-router-patterns": {
+      "source": "wshobson/agents",
+      "sourceType": "github",
+      "skillPath": "plugins/frontend-mobile-development/skills/nextjs-app-router-patterns/SKILL.md",
+      "computedHash": "3a46e9093baecb3a85819529ce05006f817663f48d9e872868c32ae6049c0d5c"
+    },
+    "supabase-postgres-best-practices": {
+      "source": "supabase/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/supabase-postgres-best-practices/SKILL.md",
+      "computedHash": "128fac78002d916c8ca908245d398e634f540d8bcf20915b2b2359aeb18eba59"
+    },
+    "tailwind-design-system": {
+      "source": "wshobson/agents",
+      "sourceType": "github",
+      "skillPath": "plugins/frontend-mobile-development/skills/tailwind-design-system/SKILL.md",
+      "computedHash": "992ab1e874c4f4159aa18d4ff45d1c3f86f322f0bd2a6744cc32f7d6147f9f06"
+    },
+    "vercel-composition-patterns": {
+      "source": "vercel-labs/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/composition-patterns/SKILL.md",
+      "computedHash": "10eb4ec94577b79ae98c63ce3e7f35f8a6a06436a4011bff083b397de6960eeb"
+    },
+    "vercel-react-best-practices": {
+      "source": "vercel-labs/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/react-best-practices/SKILL.md",
+      "computedHash": "6b526d013e28073246a36f99b529bc43745d30832ecfa8217b359c34f260ca6b"
+    },
+    "vercel-react-view-transitions": {
+      "source": "vercel-labs/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/react-view-transitions/SKILL.md",
+      "computedHash": "12f8e118b8ca5fa45e3f0b56c269fb2e35251b705d2320b26b0727a0f58adefc"
+    },
+    "web-design-guidelines": {
+      "source": "vercel-labs/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/web-design-guidelines/SKILL.md",
+      "computedHash": "d8e7d3afe37dcc8a97b99ffb5afdb4d0919ae0092ea8b68f44eb201f035e33ac"
+    }
+  }
+}

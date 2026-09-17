@@ -1,0 +1,11 @@
+{
+  "projectId": "152314d2-1c55-4780-b874-2f4d8fe724dd",
+  "type": "frontend",
+  "name": "Vendor Dashboard — Overview and Metrics",
+  "planSteps": [
+    { "type": "action", "description": "Navigate to /vendor/dashboard" },
+    { "type": "assertion", "description": "The vendor business name header is displayed" },
+    { "type": "assertion", "description": "The metrics cards for products, orders, and RFQs are visible" },
+    { "type": "assertion", "description": "The products management table is visible with listed items" }
+  ]
+}

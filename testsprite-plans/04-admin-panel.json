@@ -1,0 +1,11 @@
+{
+  "projectId": "152314d2-1c55-4780-b874-2f4d8fe724dd",
+  "type": "frontend",
+  "name": "Admin Dashboard — Vendors and Disputes Management",
+  "planSteps": [
+    { "type": "action", "description": "Navigate to /admin" },
+    { "type": "assertion", "description": "The admin header containing 'إدارة المعارض والنزاعات' is visible" },
+    { "type": "assertion", "description": "The statistics cards for pending vendors and open disputes are visible" },
+    { "type": "assertion", "description": "The disputes resolution center section is visible" }
+  ]
+}

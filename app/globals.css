@@ -1,0 +1,55 @@
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground-rgb: 40, 25, 12;
+  --background-start-rgb: 253, 251, 247;
+  --background-end-rgb: 247, 242, 234;
+}
+
+body {
+  color: rgb(var(--foreground-rgb));
+  background: linear-gradient(
+      to bottom,
+      rgb(var(--background-start-rgb)),
+      rgb(var(--background-end-rgb))
+    )
+    fixed;
+  font-family: 'Cairo', sans-serif;
+  direction: rtl;
+  text-align: right;
+  overflow-x: hidden;
+}
+
+/* Custom Damietta Luxury Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #f1e9dd;
+}
+::-webkit-scrollbar-thumb {
+  background: #c59b6d;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #9e6735;
+}
+
+/* Glassmorphism helpers */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(222, 192, 158, 0.3);
+}
+
+.gold-gradient-text {
+  background: linear-gradient(135deg, #BA844E 0%, #7E4F26 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
