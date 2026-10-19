@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { PenTool, Upload, Sparkles, CheckCircle2, ArrowRight, ShieldCheck, AlertCircle } from 'lucide-react';
 import { useMarketplaceStore } from '@/lib/store';
 import { FurnitureCategory } from '@/types';
+import { ImageUploader } from '@/components/ImageUploader';
 
 const CATEGORIES: FurnitureCategory[] = [
   'غرف نوم',
@@ -27,6 +28,7 @@ function NewRFQForm() {
   const [category, setCategory] = useState<FurnitureCategory>(initialCategory);
   const [specifications, setSpecifications] = useState('');
   const [budgetRange, setBudgetRange] = useState('30,000 - 45,000 جنيه');
+  const [uploadedImages, setUploadedImages] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
 
@@ -42,9 +44,9 @@ function NewRFQForm() {
       category,
       specifications,
       budget_range: budgetRange,
-      sample_images: [
-        'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=500&auto=format&fit=crop&q=80'
-      ],
+      sample_images: uploadedImages.length > 0 
+        ? uploadedImages 
+        : ['https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=500&auto=format&fit=crop&q=80'],
     });
 
     setSuccess(true);
@@ -137,17 +139,15 @@ function NewRFQForm() {
             </select>
           </div>
 
-          {/* Simulated file upload */}
-          <div className="space-y-1.5">
-            <label className="block text-xs font-bold text-stone-800">
-              إرفاق صور أو رسومات هندسية توضيحية (اختياري)
-            </label>
-            <div className="border-2 border-dashed border-stone-300 hover:border-brand-500 rounded-2xl p-6 text-center cursor-pointer transition-colors bg-stone-50/50">
-              <Upload className="w-8 h-8 text-stone-400 mx-auto mb-2" />
-              <span className="text-xs font-bold text-stone-700 block">اضغط لاختيار صور الموديل أو المخطط</span>
-              <span className="text-[11px] text-stone-400 block mt-1">يدعم PNG, JPG, PDF بحد أقصى 10 ميجا</span>
-            </div>
-          </div>
+          {/* Real interactive file & photo uploader */}
+          <ImageUploader
+            images={uploadedImages}
+            onChange={setUploadedImages}
+            maxImages={6}
+            label="إرفاق صور أو رسومات هندسية توضيحية للطلب (اختياري)"
+            helpText="اختر صور الموديل أو الرسومات التوضيحية من جهازك، أو اختر من نماذج دمياط الجاهزة"
+            allowPresets={true}
+          />
 
           {/* Guarantees */}
           <div className="bg-amber-50/60 p-4 rounded-xl border border-amber-200/60 flex items-start gap-3 text-xs text-amber-900">

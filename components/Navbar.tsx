@@ -14,7 +14,8 @@ import {
   Compass, 
   ShoppingBag,
   PackageCheck,
-  LogIn
+  LogIn,
+  Plus
 } from 'lucide-react';
 import { useMarketplaceStore } from '@/lib/store';
 import { UserRole } from '@/types';
@@ -158,7 +159,17 @@ export const Navbar: React.FC = () => {
           </nav>
 
           {/* Call to action & Auth */}
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2">
+            {currentRole === 'vendor' && (
+              <Link
+                href="/vendor/products/new"
+                className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-brand-900 hover:bg-stone-900 text-white text-xs font-bold shadow-sm hover:shadow transition-all"
+              >
+                <Plus className="w-3.5 h-3.5 text-amber-300" />
+                <span>نشر قطعة أثاث</span>
+              </Link>
+            )}
+
             <Link
               href="/rfq/new"
               className="hidden sm:inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-gradient-to-r from-brand-600 to-brand-700 hover:from-brand-700 hover:to-brand-800 text-white text-xs font-bold shadow-md hover:shadow-lg transition-all"
@@ -230,6 +241,27 @@ export const Navbar: React.FC = () => {
               </Link>
             );
           })}
+          {/* Mobile Quick Action Buttons */}
+          <div className="pt-2 grid grid-cols-2 gap-2">
+            <Link
+              href="/vendor/products/new"
+              onClick={() => setMobileMenuOpen(false)}
+              className="flex items-center justify-center gap-1 py-2 rounded-lg bg-brand-800 text-white text-xs font-bold"
+            >
+              <Plus className="w-3.5 h-3.5 text-amber-300" />
+              <span>نشر قطعة أثاث</span>
+            </Link>
+
+            <Link
+              href="/rfq/new"
+              onClick={() => setMobileMenuOpen(false)}
+              className="flex items-center justify-center gap-1 py-2 rounded-lg bg-amber-500 text-brand-950 text-xs font-bold"
+            >
+              <ShoppingBag className="w-3.5 h-3.5" />
+              <span>طلب تفصيل</span>
+            </Link>
+          </div>
+
           <div className="pt-2 border-t border-stone-200 flex items-center justify-between text-xs">
             <Link
               href="/login"

@@ -98,6 +98,7 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
               alt={product.title}
               fill
               priority
+              unoptimized={(product.media_urls[activeImageIndex] || '').startsWith('data:')}
               className="object-cover transition-all duration-300"
               sizes="(max-width: 1024px) 100vw, 60vw"
             />
@@ -129,7 +130,7 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
                       : 'border-stone-200 opacity-70 hover:opacity-100'
                   }`}
                 >
-                  <Image src={url} alt="" fill className="object-cover" />
+                  <Image src={url} alt="" fill unoptimized={url.startsWith('data:')} className="object-cover" />
                 </button>
               ))}
             </div>

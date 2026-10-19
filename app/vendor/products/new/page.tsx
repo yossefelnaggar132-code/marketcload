@@ -3,9 +3,10 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowRight, Plus, Trash2, Upload, Sparkles, CheckCircle } from 'lucide-react';
+import { ArrowRight, Plus, Trash2, Upload, Sparkles, CheckCircle, AlertCircle } from 'lucide-react';
 import { useMarketplaceStore } from '@/lib/store';
 import { FurnitureCategory, PostType } from '@/types';
+import { ImageUploader } from '@/components/ImageUploader';
 
 export default function NewProductPage() {
   const router = useRouter();
@@ -19,7 +20,10 @@ export default function NewProductPage() {
   const [postType, setPostType] = useState<PostType>('available');
   const [woodType, setWoodType] = useState('خشب زان أحمر روماني طبيعي');
   const [manufacturingDays, setManufacturingDays] = useState(15);
-  const [mediaUrl, setMediaUrl] = useState('https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=900&auto=format&fit=crop&q=80');
+  const [mediaUrls, setMediaUrls] = useState<string[]>([
+    'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=900&auto=format&fit=crop&q=80'
+  ]);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   // Customization builder
   const [customOptions, setCustomOptions] = useState<Array<{ name: string; valuesStr: string }>>([
@@ -45,6 +49,13 @@ export default function NewProductPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setErrorMsg(null);
+
+    if (mediaUrls.length === 0) {
+      setErrorMsg('يرجى رفع صورة واحدة على الأقل لقطعة الأثاث أو اختيار نموذج');
+      return;
+    }
+
     setIsSubmitting(true);
 
     const formattedOptions = customOptions
@@ -67,7 +78,7 @@ export default function NewProductPage() {
       post_type: postType,
       wood_type: woodType,
       manufacturing_time_days: Number(manufacturingDays),
-      media_urls: [mediaUrl],
+      media_urls: mediaUrls,
       customization_options: formattedOptions,
     });
 
@@ -214,20 +225,22 @@ export default function NewProductPage() {
             </div>
           </div>
 
-          {/* Media image url simulation */}
-          <div className="space-y-1.5">
-            <label className="block text-xs font-bold text-stone-800">
-              رابط صورة المنتج عالية الدقة <span className="text-rose-500">*</span>
-            </label>
-            <input
-              type="url"
-              required
-              value={mediaUrl}
-              onChange={(e) => setMediaUrl(e.target.value)}
-              placeholder="https://..."
-              className="w-full px-4 py-3 rounded-xl border border-stone-200 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none"
-            />
-          </div>
+          {/* Real interactive multi-image uploader */}
+          <ImageUploader
+            images={mediaUrls}
+            onChange={setMediaUrls}
+            maxImages={8}
+            label="صور قطعة الأثاث ومعروضات الورشة"
+            helpText="ارفع صور واضحة من جهازك أو هاتفك لزوايا القطعة ونقوش الأويما ونوع الخشب"
+            allowPresets={true}
+          />
+
+          {errorMsg && (
+            <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-bold flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 shrink-0" />
+              <span>{errorMsg}</span>
+            </div>
+          )}
 
           {/* Description */}
           <div className="space-y-1.5">

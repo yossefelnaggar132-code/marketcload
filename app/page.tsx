@@ -11,7 +11,8 @@ import {
   ShieldCheck, 
   PenTool,
   Search,
-  X
+  X,
+  Plus
 } from 'lucide-react';
 import { ProductCard } from '@/components/ProductCard';
 import { CategoryTabs } from '@/components/CategoryTabs';
@@ -96,6 +97,41 @@ export default function HomePage() {
 
         {/* Decorative background overlay */}
         <div className="absolute left-0 bottom-0 top-0 w-1/2 opacity-20 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-amber-400 via-transparent to-transparent pointer-events-none" />
+      </section>
+
+      {/* Quick Community / Post Sharing Bar */}
+      <section className="bg-white rounded-2xl p-4 sm:p-5 border border-brand-200/90 shadow-soft flex flex-col md:flex-row items-center justify-between gap-4">
+        <div className="flex items-center gap-3 w-full md:w-auto">
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-brand-600 to-brand-800 text-white flex items-center justify-center font-bold text-xl shrink-0 shadow-sm">
+            ✨
+          </div>
+          <div className="space-y-0.5">
+            <h3 className="text-sm font-black text-stone-900">
+              شارك قطعة أثاث جديدة أو اطلب تصنيع تصميمك المفضل بالصور
+            </h3>
+            <p className="text-xs text-stone-500">
+              انشر صور قطعك في فيد دمياط العام أو ارفع صور الموديل المطلوب لتلقي عروض الورش
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2.5 w-full md:w-auto justify-end">
+          <Link
+            href="/vendor/products/new"
+            className="flex-1 md:flex-none inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-brand-800 hover:bg-brand-900 text-white text-xs font-bold shadow-sm transition-all whitespace-nowrap"
+          >
+            <Plus className="w-4 h-4 text-amber-300" />
+            <span>نشر قطعة أثاث (معرض)</span>
+          </Link>
+
+          <Link
+            href="/rfq/new"
+            className="flex-1 md:flex-none inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-brand-950 text-xs font-black shadow-sm transition-all whitespace-nowrap"
+          >
+            <PenTool className="w-4 h-4" />
+            <span>طلب تفصيل بالصور (RFQ)</span>
+          </Link>
+        </div>
       </section>
 
       {/* Main Feed Section */}

@@ -41,6 +41,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             src={images[activeImageIndex]}
             alt={product.title}
             fill
+            unoptimized={images[activeImageIndex]?.startsWith('data:')}
             className="object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           />

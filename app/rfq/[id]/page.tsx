@@ -88,6 +88,37 @@ export default function RFQDetailPage({ params }: { params: { id: string } }) {
             <span className="font-bold text-stone-800">{new Date(rfq.created_at).toLocaleDateString('ar-EG')}</span>
           </div>
         </div>
+
+        {/* Sample Images & Sketches Gallery */}
+        {rfq.sample_images && rfq.sample_images.length > 0 && (
+          <div className="space-y-2 pt-3 border-t border-stone-100">
+            <span className="text-xs font-bold text-stone-800 block">
+              الصور والمخططات المرفقة مع الطلب ({rfq.sample_images.length}):
+            </span>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+              {rfq.sample_images.map((imgUrl, idx) => (
+                <a
+                  key={idx}
+                  href={imgUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group relative aspect-[4/3] rounded-xl overflow-hidden border border-brand-200 bg-stone-100 shadow-sm block hover:shadow-md transition-all"
+                  title="اضغط لفتح الصورة بحجمها الكامل"
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={imgUrl}
+                    alt={`مخطط ${idx + 1}`}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                  <span className="absolute bottom-1.5 right-1.5 bg-black/70 text-white text-[10px] font-bold px-2 py-0.5 rounded backdrop-blur-xs">
+                    تكبير 🔍
+                  </span>
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Bids & Offers Section */}
